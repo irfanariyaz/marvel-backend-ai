@@ -12,6 +12,9 @@ from app.tools.utils.tool_utilities import load_tool_metadata, execute_tool, fin
 from app.tools.presentation_generator.tools.slides_generator import SlidesGenerator
 import uuid
 from fastapi import FastAPI
+from fastapi import Request
+import json
+from app.services.cache_service import CacheInterface
 
 logger = setup_logger(__name__)
 router = APIRouter()
@@ -21,6 +24,11 @@ app = FastAPI()
 if not hasattr(app.state, "presentation_contexts"):
     app.state.presentation_contexts = {}
 
+
+# Dependency injection
+async def get_cache_service(request: Request) -> CacheInterface:
+    return request.app.state.cache_service
+
 @router.get("/")
 def read_root():
     return {"Hello": "World"}
@@ -29,20 +37,27 @@ def read_root():
 # 1. Generate outline with initial inputs
 # 2. Generate slides using stored outline and inputs
 @router.post("/generate-outline", response_model=Union[ToolResponse, ErrorResponse])
-async def generate_outline(data: ToolRequest, _ = Depends(key_check)):
+async def generate_outline(
+    data: ToolRequest, 
+    cache: CacheInterface = Depends(get_cache_service),
+    _ = Depends(key_check)
+):
     try:
-        # Execute outline generation and store context for slides
+        # Potential Bottleneck: execute tool can be a blocking operation
+        # Solution: Use Redis Queue or Celery for background tasks
+        # Execute outline generation and store context for slides generation
         request_data = data.tool_data
         requested_tool = load_tool_metadata(request_data.tool_id)
         request_inputs_dict = finalize_inputs(request_data.inputs, requested_tool['inputs'])
         result = execute_tool(request_data.tool_id, request_inputs_dict)
         
-        # Store in app state, to use as context for slides generation
+        # Store in app cache, to use as context for slides generation
         presentation_id = str(uuid.uuid4())
-        app.state.presentation_contexts[presentation_id] = {
-            "outline": result,
-            "inputs": request_inputs_dict
-        }
+        
+        await cache.set(
+            f"presentation:{presentation_id}",
+            json.dumps({"outline": result, "inputs": request_inputs_dict})
+        )
         
         return ToolResponse(data={
             "outline": result,
@@ -64,16 +79,17 @@ async def generate_outline(data: ToolRequest, _ = Depends(key_check)):
         )
 
 @router.post("/generate-slides/{presentation_id}", response_model=Union[ToolResponse, ErrorResponse])
-async def generate_slides(presentation_id: str, _ = Depends(key_check)):
+async def generate_slides(
+    presentation_id: str,
+    cache: CacheInterface = Depends(get_cache_service),
+    _ = Depends(key_check)
+):
     try:
-        # Retrieve stored context and generate slides
-        context = app.state.presentation_contexts.get(presentation_id)
-        if not context:
-            raise HTTPException(
-                status_code=404, 
-                detail="Presentation context not found"
-            )
+        context_str = await cache.get(f"presentation:{presentation_id}")
+        if not context_str:
+            raise HTTPException(status_code=404)
         
+        context = json.loads(context_str)
         slides = SlidesGenerator(
             outline=context["outline"],
             inputs=context["inputs"]
