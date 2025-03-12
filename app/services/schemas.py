@@ -117,6 +117,8 @@ class PresentationGeneratorArgs(BaseModel):
     topic: str
     objectives: str
     lang: Optional[str] = "en"
+    file_type:str
+    file_url:str
 
 class RubricGeneratorArgs(BaseModel):
     grade_level: Literal["pre-k", "kindergarten", "elementary", "middle", "high", "university", "professional"]
