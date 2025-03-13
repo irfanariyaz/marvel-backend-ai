@@ -1,0 +1,39 @@
+{
+    "inputs": [
+        {
+            "label": "Topic",
+            "name": "topic",
+            "type": "text"
+        },
+        {
+            "label": "Grade level",
+            "name": "grade_level",
+            "type": "text"
+        },
+        {
+            "label": "no of slides",
+            "name": "n_slides",
+            "type": "number"
+        },
+        {
+            "label": "Objectives",
+            "name": "objectives",
+            "type": "text"
+        },
+        {
+            "label": "File Type",
+            "name": "file_type",
+            "type": "text"
+        },
+        {
+            "label": "File URL",
+            "name": "file_url",
+            "type": "text"
+        },
+        {
+            "label": "Language",
+            "name": "lang",
+            "type": "text"
+        }
+    ]
+}

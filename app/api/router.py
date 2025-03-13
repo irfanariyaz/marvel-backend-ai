@@ -9,12 +9,13 @@ from app.utils.auth import key_check
 from app.services.logger import setup_logger
 from app.api.error_utilities import InputValidationError, ErrorResponse
 from app.tools.utils.tool_utilities import load_tool_metadata, execute_tool, finalize_inputs
-from app.tools.presentation_generator.tools.slides_generator import SlidesGenerator
+
 import uuid
 from fastapi import FastAPI
 from fastapi import Request
 import json
 from app.services.cache_service import CacheInterface
+from app.tools.presentation_generator.slide_generator.core import executor
 
 logger = setup_logger(__name__)
 router = APIRouter()
@@ -53,7 +54,7 @@ async def generate_outline(
         request_inputs_dict = finalize_inputs(request_data.inputs, requested_tool['inputs'])
 
         result = execute_tool(request_data.tool_id, request_inputs_dict)
-        
+        logger.info(f"requested_input_dict:{request_inputs_dict}")
         logger.info(result)
         
         # Store in app cache, to use as context for slides generation
@@ -84,35 +85,31 @@ async def generate_outline(
         )
 
 
-#         )
+        
 @router.post("/generate-slides/{presentation_id}", response_model=Union[ToolResponse, ErrorResponse])
 async def generate_slides(
-    presentation_id: str,
+    #data:ToolRequest,
+    presentation_id:str,
     cache: CacheInterface = Depends(get_cache_service),
+    
     _ = Depends(key_check)
 ):
     try:
-        context_str = await cache.get(f"presentation:{presentation_id}")
-        if not context_str:
-            raise HTTPException(status_code=404, detail="Presentation context not found")
-
-        context = json.loads(context_str)
-
-        logger.info(context)
+       
         
-        # Extract context text
+       #requested_tool = load_tool_metadata("slide-generator")
         
+        #request_inputs_dict = finalize_inputs(request_data.inputs, requested_tool['inputs'])
+       tool_id="slide-generator" 
+       input_dict={"presentation_id":presentation_id,"cache":cache}
+       result = await execute_tool(tool_id,input_dict )
+     #  result=await executor(presentation_id=presentation_id)
+       return result
 
-        slides = SlidesGenerator(
-            outline=context["outline"],
-            inputs=context["inputs"],
-            context_text=context["context"] # Pass context to generator
-        ).compile()
-
-        return ToolResponse(data=slides)
-
+        
     except InputValidationError as e:
         logger.error(f"InputValidationError: {e}")
+        logger.info(f'From Input Validation Error in router.py')
         return JSONResponse(
             status_code=400,
             content=jsonable_encoder(ErrorResponse(status=400, message=e.message))
@@ -120,6 +117,7 @@ async def generate_slides(
 
     except HTTPException as e:
         logger.error(f"HTTPException: {e}")
+        logger.info(f'From HTTP Exception Error in router.py')
         return JSONResponse(
             status_code=e.status_code,
             content=jsonable_encoder(ErrorResponse(status=e.status_code, message=e.detail))

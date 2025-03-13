@@ -22,6 +22,7 @@ def get_executor_by_name(module_path):
         return getattr(module, 'executor')
     except Exception as e:
         logger.error(f"Failed to import executor from {module_path}: {str(e)}")
+        logger.info(f'From EXception in executor by name tool_utuilities.py')
         raise ImportError(f"Failed to import module from {module_path}: {str(e)}")
 
 def load_tool_metadata(tool_id):
@@ -137,16 +138,20 @@ def execute_tool(tool_id, request_inputs_dict):
     
     except VideoTranscriptError as e:
         logger.error(f"Failed to execute tool due to video transcript error: {str(e)}")
+        logger.info(f'From Video Transcript Error in tool_utuilities.py')
         raise HTTPException(status_code=400, detail=str(e))
     
     except ToolExecutorError as e:
         logger.error(f"Failed to execute tool due to executor error: {str(e)}")
+        logger.info(f'From Tool Executor Error in tool_utuilities.py')
         raise HTTPException(status_code=400, detail=str(e))
     
     except ImportError as e:
         logger.error(f"Failed to execute tool due to import error: {str(e)}")
+        logger.info(f'From Input Error in tool_utuilities.py')
         raise HTTPException(status_code=500, detail=str(e))
     
     except Exception as e:
         logger.error(f"Encountered error in executing tool: {str(e)}")
+        logger.info(f'From Exception Error in tool_utuilities.py')
         raise HTTPException(status_code=500, detail=str(e))

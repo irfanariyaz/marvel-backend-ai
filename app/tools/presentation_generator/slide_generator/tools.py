@@ -152,7 +152,7 @@ class SlidesGenerator:
                 f"Topic: {self.inputs['topic']}\n"
                 f"Learning Objectives: {self.inputs['objectives']}\n"
                 f"Language: {self.inputs['lang']}\n"
-                f"use content in {self.context_text} if relevant\n\n"
+                f"if {self.context_text} is not None, use content in {self.context_text} if relevant\n\n"
             )
 
             prompts = {}
@@ -194,7 +194,7 @@ class SlidesGenerator:
 
             # Compile final presentation structure
             presentation = PresentationSchema(
-                slides=[results["branches"][f"slide_{i+1}"] for i in range(len(self.outline["slides"]))]
+                slides=[results[f"slide_{i+1}"] for i in range(len(self.outline["slides"]))]
             )
 
             return dict(presentation)

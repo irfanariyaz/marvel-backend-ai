@@ -23,9 +23,14 @@
         "path": "tools.lesson_plan_generator.core",
         "metadata_file": "metadata.json"
     },
-    "presentation-generator": {
-        "path": "tools.presentation_generator.core",
+    "outline-generator": {
+        "path": "tools.presentation_generator.outline_generator.core",
         "metadata_file": "metadata.json"
+    },
+    "slide-generator": {
+        "path": "tools.presentation_generator.slide_generator.core",
+        "metadata_file":"metadata.json"
+        
     },
     "connect-with-them": {
         "path": "tools.connect_with_them.core",
