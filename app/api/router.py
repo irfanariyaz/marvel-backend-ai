@@ -47,20 +47,25 @@ async def generate_outline(
         # Solution: Use Redis Queue or Celery for background tasks
         # Execute outline generation and store context for slides generation
         request_data = data.tool_data
+
         requested_tool = load_tool_metadata(request_data.tool_id)
+
         request_inputs_dict = finalize_inputs(request_data.inputs, requested_tool['inputs'])
+
         result = execute_tool(request_data.tool_id, request_inputs_dict)
+        
+        logger.info(result)
         
         # Store in app cache, to use as context for slides generation
         presentation_id = str(uuid.uuid4())
-        
+        #,"context":result["context"]
         await cache.set(
             f"presentation:{presentation_id}",
-            json.dumps({"outline": result, "inputs": request_inputs_dict})
+            json.dumps({"outline": result["outline"], "inputs": request_inputs_dict,"context":result["context"]})
         )
         
         return ToolResponse(data={
-            "outline": result,
+            "outline": result["outline"],
             "presentation_id": presentation_id
         })
     
@@ -78,6 +83,8 @@ async def generate_outline(
             content=jsonable_encoder(ErrorResponse(status=e.status_code, message=e.detail))
         )
 
+
+#         )
 @router.post("/generate-slides/{presentation_id}", response_model=Union[ToolResponse, ErrorResponse])
 async def generate_slides(
     presentation_id: str,
@@ -87,23 +94,30 @@ async def generate_slides(
     try:
         context_str = await cache.get(f"presentation:{presentation_id}")
         if not context_str:
-            raise HTTPException(status_code=404)
-        
+            raise HTTPException(status_code=404, detail="Presentation context not found")
+
         context = json.loads(context_str)
+
+        logger.info(context)
+        
+        # Extract context text
+        
+
         slides = SlidesGenerator(
             outline=context["outline"],
-            inputs=context["inputs"]
+            inputs=context["inputs"],
+            context_text=context["context"] # Pass context to generator
         ).compile()
-        
+
         return ToolResponse(data=slides)
-    
+
     except InputValidationError as e:
         logger.error(f"InputValidationError: {e}")
         return JSONResponse(
             status_code=400,
             content=jsonable_encoder(ErrorResponse(status=400, message=e.message))
         )
-    
+
     except HTTPException as e:
         logger.error(f"HTTPException: {e}")
         return JSONResponse(

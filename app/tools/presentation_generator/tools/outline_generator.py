@@ -25,11 +25,12 @@ class OutlineGenerator:
         self.vectorstore_class=Chroma
         self.vectorstore, self.retriever, self.runner = None, None, None
         self.context=None
-
+        self.text_content=None
     
     def compile(self,docs:Optional[List[Document]]) -> dict:
         try:
             #create prompt if document is passed
+            #Use the provided document, which covers {context}.
             if(docs):
                 prompt = PromptTemplate(
                 template=(
@@ -37,14 +38,16 @@ class OutlineGenerator:
                     "Topic: {topic}\n"
                     "Number of slides needed: {n_slides}\n"
                     "Learning objectives: {objectives}\n"
-                    "Language: {lang}\n\n"
+                    "Language: {lang}\n"
+                    "Context:{context}\n\n"
                     "Create an outline where:\n"
                     "1. Each slide has a clear topic\n"
                     "2. Include a brief description of the content\n"
                     "3. Add transitions between slides for smooth flow\n"
                     "4. Ensure content builds progressively\n"
                     "5. Match the grade level's comprehension\n"
-                    "6. Generate exactly {n_slides} slides\n\n"
+                    "6.Use the context provided to generate relevant content for outlines if the context matches the provided topic else ignore the context"
+                    "7. Generate exactly {n_slides} slides\n\n"
                     "{format_instructions}"
                 ),
                 input_variables=["grade_level", "topic", "n_slides", "objectives", "context","lang"],
@@ -57,8 +60,10 @@ class OutlineGenerator:
 
                     retriever = self.vectorstore.as_retriever()
                     logger.info(f"Retriever created successfully") if self.verbose else None
-                    query = "Provide general context for the topic to create notes."
+                    query = (f"Provide comprehensive background information and key concepts related to {self.args.topic},"
+                            f"tailored for {self.args.grade_level}, to assist in creating detailed and informative notes.")
                     self.context = retriever.invoke(query)
+                    #logger.info(f"context:{self.context}")
             # Create prompt without document for outline generation with learning objectives and structure
             else:
                 prompt = PromptTemplate(
@@ -94,11 +99,20 @@ class OutlineGenerator:
 
             if self.verbose:
                 logger.info(f"Generated outline successfully")
+            def extract_text_content(context):
+                return [doc.page_content for doc in context]
+        
+
+            if (self.context):
+                self.text_content = extract_text_content(self.context)
+            logger.info(f"text_content:{self.text_content}")
+
+
             if(docs):
                 if self.verbose: print(f"Deleting vectorstore")
                 self.vectorstore.delete_collection()
 
-            return dict(result)
+            return {"outline":dict(result),"context":self.text_content}
 
         except Exception as e:
             logger.error(f"Failed to generate outline: {str(e)}")
