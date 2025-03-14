@@ -152,3 +152,9 @@ class WritingFeedbackGeneratorArgs(BaseModel):
     writing_to_review_file_url: str
     writing_to_review_file_type: str
     lang: Optional[str] = "en"
+
+class SlideGeneratorInputArgs(BaseModel):    
+    outline: dict    
+    inputs: dict    
+    context_text: Optional[List[str ]]=None
+    lang: Optional[str] = "en"

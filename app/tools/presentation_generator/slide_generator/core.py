@@ -61,6 +61,7 @@ from fastapi.encoders import jsonable_encoder
 from app.api.error_utilities import ErrorResponse
 from app.services.schemas import ToolResponse
 import json
+from app.services.schemas import SlideGeneratorInputArgs
 
 
 logger = setup_logger()
@@ -84,14 +85,16 @@ async def executor(presentation_id: str,
 
         # Load the JSON context
         context = json.loads(context_str)
-        logger.info(context)
+        logger.info(f"context printed from core.py :{context}")
 
-        # Generate slides
-        slides = SlidesGenerator(
+        args=SlideGeneratorInputArgs(
             outline=context["outline"],
             inputs=context["inputs"],
-            context_text=context["context"]  # Pass context to generator
-        ).compile()
+            context_text=context["context"]
+
+        )
+        # Generate slides
+        slides = SlidesGenerator(args=args).compile()
 
         if slides is None:
             raise HTTPException(status_code=500, detail="Slide generation failed")

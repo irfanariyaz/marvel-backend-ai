@@ -134,14 +134,15 @@ from fastapi import HTTPException
 logger = setup_logger(__name__)
 
 class SlidesGenerator:
-    def __init__(self, outline: dict, inputs: dict,context_text:List[str] ,verbose=False):
+    def __init__(self, args=None ,verbose=False):
         # Initialize LLM and parser for detailed slide content generation
-        self.outline = outline
-        self.inputs = inputs
+        self.outline = args.outline
+        self.inputs = args.inputs
+        self.context_text=args.context_text
         self.verbose = verbose
         self.model = GoogleGenerativeAI(model="gemini-1.5-pro")
         self.parser = JsonOutputParser(pydantic_object=SlideContent)
-        self.context_text=context_text
+        
         
     def compile(self) -> dict:
         try:
@@ -194,13 +195,14 @@ class SlidesGenerator:
 
             # Compile final presentation structure
             presentation = PresentationSchema(
-                slides=[results[f"slide_{i+1}"] for i in range(len(self.outline["slides"]))]
+                slides=[results["branches"][f"slide_{i+1}"] for i in range(len(self.outline["slides"]))]
             )
 
             return dict(presentation)
 
         except Exception as e:
-            logger.error(f"Failed to generate slides: {str(e)},{e}")
+            logger.error(f"Failed to generate slides: {str(e)}")
+            logger.debug(f"Results:{results}")
             raise HTTPException(status_code=500, detail=f"Failed to generate slides: {str(e)}")
 
 # Defines expected structure for each slide in the presentation
