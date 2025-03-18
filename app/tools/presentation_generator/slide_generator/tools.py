@@ -187,14 +187,16 @@ class SlidesGenerator:
             )
 
             prompts = {}
+            prev_transition=None
             for idx, slide in enumerate(self.outline["slides"]):
+
                 prompt = PromptTemplate(
                     template=(
                         f"{base_context}\n"
                         f"Generate structured content for Slide {idx + 1}.\n\n"
                         f"Topic: {slide['topic']}\n"
                         f"Description: {slide['description']}\n"
-                        f"Transition: {slide['transition']}\n\n"
+                        f"Transition: {prev_transition}\n\n"
                         "### Instructions:\n"
                         "1. Ensure the content aligns with the grade level.\n"
                         "2. Use clear, concise, and engaging language.\n"
@@ -225,6 +227,7 @@ class SlidesGenerator:
                     input_variables=[],
                     partial_variables={"format_instructions": self.parser.get_format_instructions()}
                 )
+                prev_transition=slide['transition']
                 prompts[f"slide_{idx + 1}"] = prompt
 
             chains = {key: prompt | self.model | self.parser for key, prompt in prompts.items()}
