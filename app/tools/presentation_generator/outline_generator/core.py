@@ -140,10 +140,11 @@ async def executor(
             f"presentation:{presentation_id}",
             json.dumps({"outline": output["outline"], "inputs": request_input_dict, "context": output.get("context", [])})
         )
-        data={
-            "outline": output,
-            "presentation_id": presentation_id
-        }
+        # data={
+        #     "outline": output,
+        #     "presentation_id": presentation_id
+        # }
+        output["presentation_id"]=presentation_id
         logger.info("Presentation generated successfully")
 
     except LoaderError as e:
@@ -156,4 +157,4 @@ async def executor(
         logger.error(error_message)
         raise ValueError(error_message)
 
-    return data
+    return output

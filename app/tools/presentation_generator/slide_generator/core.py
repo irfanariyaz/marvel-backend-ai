@@ -99,7 +99,7 @@ async def executor(presentation_id: str,
         if slides is None:
             raise HTTPException(status_code=500, detail="Slide generation failed")
 
-        return ToolResponse(data=slides)
+        return slides
 
     except HTTPException as e:
         logger.error(f"HTTPException: {e}")
