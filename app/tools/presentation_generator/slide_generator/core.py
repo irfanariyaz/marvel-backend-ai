@@ -85,7 +85,7 @@ async def executor(presentation_id: str,
 
         # Load the JSON context
         context = json.loads(context_str)
-        logger.info(f"context printed from core.py :{context}")
+        logger.info(f"context printed from core.py ")
 
         args=SlideGeneratorInputArgs(
             outline=context["outline"],

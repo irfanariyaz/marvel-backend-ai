@@ -4,7 +4,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - .:/app  # Enables live code changes
+      - .:/app
+      - ./service-account.json:/app/service-account.json
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
+    
     env_file:
       - app/.env  # Path to your .env file
     depends_on:
@@ -15,3 +19,4 @@ services:
     image: redis
     ports:
       - "6379:6379"
+

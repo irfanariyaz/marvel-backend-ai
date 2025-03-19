@@ -1,0 +1,9 @@
+Generate a list of  {n_slides} slide titles for a presentation on {topic}. The presentation should be tailored for a {grade_level} audience. 
+The titles should:
+1. Be concise yet descriptive (5-10 words each)
+2. Include a brief description of the content
+3. Follow a logical progression from introduction to conclusion  explaining its core concepts, discuss its applications or use cases, and conclude. 
+4. Add transitions between slides for smooth flow
+5. Ensure the slide titles are clear, concise, and logically structured for the specified audience.
+
+Return ONLY the numbered slide titles without additional outline details or explanations in this structure:{format_instructions}.

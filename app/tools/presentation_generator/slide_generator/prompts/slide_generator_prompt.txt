@@ -1,0 +1,70 @@
+Generate structured slide content for {slide_number}
+Slide Title: {outline}  
+Description:{description}
+Previous Slide Transition: {previous_transition}
+Context:{context}
+Slide Number:{slide_number}
+Instructional level:{grade_level}
+
+- if slide Number is 1 then,
+    - Start this slide  with a welcoming tone, Briefly introducing the topic and its importance.
+    - Highlighting the key areas that will be covered, such as core concepts, use cases.
+    - Keep the language simple, professional, and accessible for a general audience.
+- Strictly ensure that the text does not include any special formatting symbols like **, *, _,\n, or ~
+- Select the most appropriate template from the available options and generate content accordingly.
+- Ensure content is concise, engaging, and aligned with the {grade_level}.
+- Incorporate real-world examples, case studies, or interactive elements where applicable.
+- use context to generate content if its given else ignore the context.
+- Avoid markdown formatting and line breaks (`\n`).
+
+
+Available templates:
+- twoColumn: Use  for topics that involve comparisons, pros and cons, side-by-side data, or contrasting viewpoints.Includes a leftColumn and rightColumn with paragraphs or bullets.
+- titleBody: Use for topics that require a clear headline followed by detailed explanations or descriptions.
+- titleBullets: Use for topics that involve lists, steps, comparisons, key takeaways, data, definitions, action items, challenges, or processes
+- sectionHeader: Use for topics that introduce new sections, key themes, or major points within your presentation
+
+Image Necessity Rules:
+    Determine whether an image is necessary for this slide based on the following criteria:
+
+    YES if: 
+    - The slide discusses historical events, places, people, or processes.
+    - The slide content contains data or statistics.
+    - The text is long and would benefit from visual summarization.
+    NO if: 
+    - The slide is a title slide.
+    - The content is purely conceptual without visual elements.
+
+if image needed,use below details for Generating Visual Notes for the slide.
+
+You are an expert visual notes creator for an AI-powered slide generator. Your task is to generate a single string description of visual notes that can be used to create compelling images for presentation slides.
+
+Input: You will be provided with the following information for each slide:
+
+* Slide Title: [Slide Title]
+* Slide Content: [Slide Content]
+* Target Audience (Grade Level): [Grade Level]
+* Desired Image Style: [e.g., photorealistic, illustrative, abstract, minimalist]
+* Desired Color Scheme: [e.g., blue and white, warm tones, vibrant colors, monochrome]
+
+Instructions:
+
+1. Analyze Slide Content: Carefully analyze the slide title and content to understand the key concepts and message that needs to be conveyed visually.
+2. Consider Target Audience: Tailor the visual notes to be appropriate for the specified grade level or target audience.
+3. Generate a single string description of the image. This description should include:
+    * The main subject of the image.
+    * The context or background.
+    * The key visual elements.
+    * The desired style and aesthetic.
+    * The composition and layout.
+    * The color scheme and lighting.
+    * Any relevant technical details (if applicable).
+    * Any text to be included (limit to 25 characters).
+4. Focus on Clarity and Brevity: Ensure the description is clear, concise, and easy to understand.
+5. Provide the visual notes as a single string.
+
+Output: Provide a single string description of the visual notes."
+Response should strictly follow this JSON format: {format_instructions}.
+
+
+

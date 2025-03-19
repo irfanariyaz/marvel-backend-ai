@@ -1,0 +1,15 @@
+Generate a coherent presentation outline for grade {grade_level} students.
+Topic: {topic}
+Number of slides needed: {n_slides}
+Learning objectives: {objectives}
+Language: {lang}
+Context:{context}
+Create an outline where:
+1. Each slide has a clear topic
+2. Include a brief description of the content
+3. Add transitions between slides for smooth flow
+4. Ensure content builds progressively
+5. Match the grade level's comprehension
+6. Use the context provided to generate relevant content for outlines if the context matches the provided topic else ignore the context
+8. Generate exactly {n_slides} slides
+{format_instructions}
