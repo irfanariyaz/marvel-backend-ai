@@ -144,7 +144,7 @@ class SlidesGenerator:
             #         slides=[results["branches"][f"slide_{i+1}"] for i in range(len(self.outline["slides"]))]
             #     )
           
-            #image_generator = ImageGenerator().generate_image("A visually appealing graphic related to linear algebra, perhaps a matrix or a vector graphic.  Could also include small icons related to image processing/computer graphics")
+            image_generator = ImageGenerator().generate_image("a cat playing with a red ball on a table")
             
             return dict(results)
 

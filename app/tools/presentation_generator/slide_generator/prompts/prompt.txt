@@ -1,0 +1,81 @@
+Generate structured slide content for the provided slide title based on description and transition for {grade_level} audience.
+
+**Slide Information:**
+- **Title:** {outline}
+- **Description:** {description}
+- **Previous Slide Transition:** {previous_transition}
+- **Context:** {context}
+- **Slide Number:** {slide_number}
+- **Instructional Level:** {grade_level}
+
+### **Template Selection:**
+Choose the most appropriate template from the available options:
+
+- **twoColumn**: Use for comparisons, before/after scenarios, or side-by-side information. Includes a `leftColumn` and `rightColumn` with paragraphs or bullets.
+- **titleAndBody**: Use for explanatory slides requiring well-structured, concise paragraphs.
+- **titleAndBullets**: Use for steps, processes, or multiple points, ensuring clarity and brevity.
+- **sectionHeader**: Use to introduce a new section.
+
+### **Slide Content Generation Rules:**
+- If `slide_number` is **1**, then:
+    - Start with a welcoming tone, briefly introducing the topic and its importance.
+    - Highlight key areas such as core concepts and use cases.
+    - Keep the language simple and accessible for a general audience.
+- Ensure the content is **concise, engaging, and aligned** with the {grade_level}.
+- Incorporate **real-world examples, case studies, or interactive elements** where applicable.
+- Use **clear, structured formatting** for readability (e.g., bullet points where beneficial).
+- Use **context** if provided; otherwise, focus on the slide title and description.
+- **Avoid markdown formatting** and line breaks (`\n`).
+
+### **Image Necessity Rules:**
+Determine whether an image is necessary based on the following criteria:
+
+✅ **YES** if:
+- The slide discusses **historical events, places, people, or processes**.
+- The slide content contains **data or statistics**.
+- The text is **long and would benefit from visual summarization**.
+
+❌ **NO** if:
+- The slide is a **title slide**.
+- The content is **purely conceptual without visual elements**.
+
+---
+
+### **Visual Notes Generation Rules (If Image is Needed):**
+Create a **visually engaging and informative image** that serves as a **visual note** for **{outline}**. The image should simplify complex ideas, highlight key points, and be easy to understand at a glance.
+
+Follow these 5 constraints when creating visual notes:
+
+1️⃣ **Define the Purpose**  
+   - Clearly state the purpose (e.g., educational, instructional).  
+   - Specify the **target audience** (e.g., beginners, students).  
+
+2️⃣ **Describe the Content**  
+   - Provide a **concise description** of the concept.  
+   - Highlight **key points** or ideas that must be visually represented.  
+
+3️⃣ **Specify Visual Style**  
+   - Define the desired style (e.g., **minimalist, infographic, hand-drawn**).  
+   - Mention **color schemes, layout**, and any specific visual elements (e.g., **icons, diagrams, charts**).  
+
+4️⃣ **Add Contextual Details**  
+   - Include how the **visual note** will be used (e.g., **presentation, study guide**).  
+   - Mention any **transitions or connections** to other topics if applicable.  
+
+5️⃣ **Avoid Ambiguity**  
+   - Use **clear and descriptive language**.  
+   - Avoid overly complex or vague instructions.  
+
+---
+
+### **Expected JSON Output Format:**
+```json
+{
+  "slide_{slide_number}": {
+    "title": "{outline}",
+    "template": "{chosen_template}",
+    "content": {generated_content},
+    "needs_image": {true/false},
+    "visual_notes": {visual_notes_or_"None"}
+  }
+}
