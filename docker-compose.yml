@@ -6,8 +6,10 @@ services:
     volumes:
       - .:/app
       - ./service-account.json:/app/service-account.json
+      - ./marvel-ai-firebase.json:/app/marvel-ai-firebase.json
     environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
+    #   - GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
+        - GOOGLE_APPLICATION_CREDENTIALS=/app/marvel-ai-firebase.json
     
     env_file:
       - app/.env  # Path to your .env file

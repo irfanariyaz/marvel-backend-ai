@@ -3,12 +3,17 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Union
 from app.services.logger import setup_logger
 from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnableParallel
+from langchain_core.runnables import RunnableParallel, RunnableLambda
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_google_genai import GoogleGenerativeAI
 from fastapi import HTTPException
 from app.tools.presentation_generator.slide_generator.imagen import ImageGenerator
+from app.tools.presentation_generator.slide_generator.firebase import FirebaseManager
 import os
+import firebase_admin
+from firebase_admin import credentials, storage
+import uuid
+import asyncio
 logger = setup_logger(__name__)
 
 def read_text_file(file_path):
@@ -43,7 +48,35 @@ class SlidesGenerator:
         self.model = GoogleGenerativeAI(model="gemini-1.5-pro")
         self.parser = JsonOutputParser(pydantic_object=SlideContent)
         self.prompt = read_text_file("prompts/slide_generator_prompt.txt")
+        self.image_generator = ImageGenerator()
+        self.firebase = FirebaseManager()
+
+
+    def generate_slide_image(self, slide_key, slide_data):
+         """
+        Create a RunnableLambda for processing a single slide image
+        """
+         
+         def process_image_for_slide(_):
+                if not slide_data.get("needs_image", False) or not slide_data.get("visual_notes"):
+                    return None
+                
+                # Generate image using the provided visual notes
+                image_data = self.image_generator.generate_image(
+                    slide_key, 
+                    slide_data["visual_notes"]
+                )
+                
+                # Upload the image to Firebase
+                image_url = self.firebase.upload_image(
+                    image_data, 
+                    f"slides/{self.args.inputs.get('topic', 'presentation').replace(' ', '_')}/{slide_key}.png"
+                )
+                
+                # Return the image URL to be added to the slide data
+                return {"slide_key": slide_key, "image_url": image_url}
         
+         return RunnableLambda(process_image_for_slide)
     
     def compile(self) -> dict:
         try:
@@ -130,23 +163,39 @@ class SlidesGenerator:
 
             # Run chains in parallel
             parallel_pipeline = RunnableParallel(chains)
-            results = parallel_pipeline.invoke({})
-
+            slide_results = parallel_pipeline.invoke({})
+            logger.info(f"Results: {slide_results}")
+           
+            #  Create image generation chains using RunnableParallel
+            image_chains = {}
+            for slide_key, slide_data in slide_results.items():
+                if slide_data["needs_image"]:
+                    image_chains[f"image_{slide_key}"] = self.generate_slide_image(slide_key, slide_data)
+            
+            # Only run image generation if there are images to generate
+            if image_chains:
+                image_pipeline = RunnableParallel(image_chains)
+                image_results = image_pipeline.invoke({})
+                
+                # Step 3: Add image URLs to the slide results
+                for result in image_results.values():
+                    if result and "slide_key" in result and "image_url" in result:
+                        slide_results[result["slide_key"]]["image_url"] = result["image_url"]
 
             # chains = {key: prompt | self.model | self.parser for key, prompt in prompts.items()}
             # parallel_pipeline = RunnableParallel(branches=chains)
             # results = parallel_pipeline.invoke({})
 
             if self.verbose:
-                logger.info(f"Generated {len(results)} slides successfully")
+                logger.info(f"Generated {len(slide_results)} slides successfully")
 
             # presentation = PresentationSchema(
             #         slides=[results["branches"][f"slide_{i+1}"] for i in range(len(self.outline["slides"]))]
             #     )
           
-            image_generator = ImageGenerator().generate_image("a cat playing with a red ball on a table")
+           # image_generator = ImageGenerator().generate_image("a cat playing with a red ball on a table")
             
-            return dict(results)
+            return dict(slide_results)
 
         except Exception as e:
             logger.error(f"Failed to generate slides: {str(e)}")

@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 service-account.json
+marvel-ai-firebase.json
 # C extensions
 *.so
 
