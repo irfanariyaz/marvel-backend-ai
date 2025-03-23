@@ -4,7 +4,7 @@ import uuid
 import io
 import os
 from PIL import Image  # Assuming you're using PIL for image manipulation
-
+from google.cloud import storage as google_storage
 
 import os
 from app.services.logger import setup_logger
@@ -43,15 +43,11 @@ class FirebaseManager:
         try:
             if not filename:
                 filename = f"images/{uuid.uuid4()}.png"
-
-            # Ensure image_data is bytes
-            if not isinstance(image_data, bytes):
-                raise ValueError(f"Image data must be bytes, got {type(image_data)}")
             
-            blob = self.bucket.blob(filename)
-            blob.upload_from_string(image_data, content_type="image/png")
+            blob = self.bucket.blob(filename)            
+            blob.upload_from_string(image_data._image_bytes, content_type="image/png")
             blob.make_public()
-            
+                
             return blob.public_url
         except Exception as e:
             logger.error(f"Failed to upload image to Firebase: {str(e)}")
